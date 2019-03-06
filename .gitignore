@@ -1,0 +1,34 @@
+.npm
+.DS_Store
+node_modules
+jspm_packages
+/dist
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Log files
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# some local git configurations
+git.config.sh
