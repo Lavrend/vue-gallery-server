@@ -5,8 +5,11 @@
   "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=development node --exec babel-node src/app.js",
-    "watch": "NODE_ENV=development nodemon --exec babel-node src/app.js",
+    "server": "nodemon --exec babel-node src/app.js",
+
+    "heroku-postbuild": "yarn install",
+    "start": "babel-node src/app.js",
+
     "build": "webpack",
     "build-start": "yarn build && yarn start"
   },
