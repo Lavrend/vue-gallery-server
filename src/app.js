@@ -4,35 +4,23 @@ require('dotenv').config();
 // Base dependencies
 import express from 'express';
 import bodyParser from 'body-parser';
-import { MongoClient } from 'mongodb';
-
-// configs
-import errorCodes from '@/config/errorCodes';
+import mongoose from 'mongoose';
 
 // Middlewares
 import cors from 'cors';
 import loggerMiddleware from '@/middlewares/logger';
+import { errorHandler, routeNotFound} from '@/middlewares/errorHandlers';
 
 // Routes
 import indexRoutes from '@/routes/index';
 import galleryRoutes from '@/routes/gallery';
 
-// Utils
-import ErrorWrapper from '@/utils/ErrorWrapper';
-
 const app = express();
 const PORT = process.env.PORT || 4040;
 const DB_HOST = process.env.DB_HOST || 'mongodb://localhost:27017/local';
 
-let db;
-
 // Remove x-powered-by header variable
 app.disable('x-powered-by');
-
-app.use((req, res, next) => {
-  req.db = db;
-  next();
-});
 
 // Init middlewares
 app.use(cors());
@@ -44,32 +32,30 @@ app.use(loggerMiddleware);
 app.use('/', indexRoutes);
 app.use('/gallery', galleryRoutes);
 
-// Error handlers
-app.use((err, req, res, next) => {
-  res.status(err.status || 500);
-  res.json({
-    message: err.message,
-    error: process.env.NODE_ENV === 'development' ? err : {},
-  });
-});
+// Error handlers --------------------
+app.use(errorHandler);
+app.use(routeNotFound);
+// ------------------------------------
 
-app.use((req, res, next) => {
-  const error = new ErrorWrapper({ ...errorCodes.ROUTE_NOT_FOUND });
-
-  res.status(404).json(error);
-});
-
-// MongoDB init
-MongoClient.connect(DB_HOST, { useNewUrlParser: true }, (err, database) => {
-  if (err) {
-    return console.log(err);
-  }
-
+// Connect and Listen
+const listen = () => {
   console.log('Database is connected!');
-  return db = database.db("gallery");
-});
 
-// Listen
-app.listen(PORT, function() {
-  console.log(`Server listening on port ${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+};
+
+const connect = () => {
+  mongoose.connection
+    .on('error', console.log)
+    .on('disconnected', connect)
+    .once('open', listen);
+
+  return mongoose.connect(DB_HOST, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+  });
+};
+
+connect();
